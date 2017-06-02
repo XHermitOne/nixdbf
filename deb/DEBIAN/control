@@ -1,0 +1,8 @@
+Package: nixdbf
+Version: 0.7
+Architecture: i386
+Maintainer: <xhermitone@gmail.com>
+Depends: 
+Section: contrib/otherosfs
+Priority: optional
+Description: The Linux DBF file command-line control utility 
