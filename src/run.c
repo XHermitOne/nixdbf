@@ -1,6 +1,7 @@
 /**
 * Модуль главных структур программы и основных запускающих функций
 * @file
+* @version 0.0.0.1
 */
 
 #include "main.h"
@@ -8,7 +9,7 @@
 /**
 * Режим отладки
 */
-BOOL DBG_MODE = TRUE;
+BOOL DebugMode = TRUE;
 
 
 /**
@@ -19,16 +20,16 @@ BOOL DBG_MODE = TRUE;
 */
 void print_all_records(char *dbf_filename, char *src_codepage, char *dst_codepage)
 {
-    int err = db_open(dbf_filename);
-    int count_field = field_count();
+    int err = open_dbf(dbf_filename);
+    int count_field = get_field_count_dbf();
     
     if ( err == 0)
     {
-        while (!db_eof())
+        while (!eof_dbf())
         {
             for (int i = 0; i < count_field; i++)
             {
-                char *value = get_num(i);
+                char *value = get_value_by_num_dbf(i);
                 value = str_encoding(value, src_codepage, dst_codepage, FALSE);
                 printf(value);
                 // За последним значением разделитель ставить не надо
@@ -36,13 +37,13 @@ void print_all_records(char *dbf_filename, char *src_codepage, char *dst_codepag
                     printf("|");
             }
             printf("\n");
-            db_next();            
+            next_dbf();            
         }
     }
     else
-        print_db_error(err);
+        print_error_dbf(err);
     
-    db_close();
+    close_dbf();
 }
 
 
@@ -57,23 +58,23 @@ void print_all_records(char *dbf_filename, char *src_codepage, char *dst_codepag
 void print_record_range(char *dbf_filename, char *src_codepage, char *dst_codepage,
                         long start_rec, int limit)
 {
-    int err = db_open(dbf_filename);
-    int count_field = field_count();
+    int err = open_dbf(dbf_filename);
+    int count_field = get_field_count_dbf();
     
   
     if ( err == 0)
     {
         if (start_rec > 0)
-            err = db_goto(start_rec);
+            err = goto_dbf(start_rec);
         
         if (err == 0 )
         {
             unsigned int i_rec = 0;
-            while (!db_eof())
+            while (!eof_dbf())
             {
                 for (int i = 0; i < count_field; i++)
                 {
-                    char *value = get_num(i);
+                    char *value = get_value_by_num_dbf(i);
                     value = str_encoding(value, src_codepage, dst_codepage, FALSE);
                     printf(value);
                     // За последним значением разделитель ставить не надо
@@ -81,7 +82,7 @@ void print_record_range(char *dbf_filename, char *src_codepage, char *dst_codepa
                         printf("|");
                 }
                 printf("\n");
-                db_next();
+                next_dbf();
                 
                 i_rec++;
                 if ( i_rec >= limit)
@@ -91,9 +92,9 @@ void print_record_range(char *dbf_filename, char *src_codepage, char *dst_codepa
     }
     
     if ( err != 0 )
-        print_db_error(err);
+        print_error_dbf(err);
     
-    db_close();
+    close_dbf();
 }
 
 
@@ -103,24 +104,24 @@ void print_record_range(char *dbf_filename, char *src_codepage, char *dst_codepa
 */
 void print_fields(char *dbf_filename)
 {
-    int err = db_open(dbf_filename);
-    int count_field = field_count();
+    int err = open_dbf(dbf_filename);
+    int count_field = get_field_count_dbf();
     
     if ( err == 0)
     {
         for (int i = 0; i < count_field; i++)
         {
-            char *field_name = db_getname(i);
-            char field_type = db_gettype(i);
-            int field_length = db_getlengt(i);
-            int field_decimal = db_getdecimal(i);
+            char *field_name = get_field_name_dbf(i);
+            char field_type = get_field_type_dbf(i);
+            int field_length = get_field_lengt_dbf(i);
+            int field_decimal = get_field_decimal_dbf(i);
             printf("%s|%c|%d|%d\n", field_name, field_type, field_length, field_decimal);
         }
     }
     else
-        print_db_error(err);
+        print_error_dbf(err);
     
-    db_close();
+    close_dbf();
 }
 
 
@@ -130,15 +131,15 @@ void print_fields(char *dbf_filename)
 */
 void print_record_count(char *dbf_filename)
 {
-    int err = db_open(dbf_filename);
-    long int rec_count = db_lastrec();
+    int err = open_dbf(dbf_filename);
+    long int rec_count = get_lastrec_dbf();
     
     if ( err == 0)
         printf("%lu\n", rec_count);
     else
-        print_db_error(err);
+        print_error_dbf(err);
     
-    db_close();
+    close_dbf();
 }
 
 /**
@@ -206,58 +207,58 @@ int run(int argc, char *argv[])
               { NULL, 0, NULL, 0 }
        };
   
-    if (DBG_MODE) logInfo("OPTIONS:");
+    if (DebugMode) log_info("OPTIONS:");
     while ((opt = getopt_long(argc, argv, "dlvhfCWLFORSD:", long_opts, NULL)) != -1)
     {
         switch (opt) 
         {
             case 'd':
-                DBG_MODE = TRUE;
-                if (DBG_MODE) logInfo("\t--debug");
+                DebugMode = TRUE;
+                if (DebugMode) log_info("\t--debug");
                 break;
 
             case 'l':
-                DBG_MODE = TRUE;
-                if (DBG_MODE) logInfo("\t--log");
+                DebugMode = TRUE;
+                if (DebugMode) log_info("\t--log");
                 break;
                 
             case 'h':
-                printHelp();
-                if (DBG_MODE) logInfo("\t--help");
+                print_help();
+                if (DebugMode) log_info("\t--help");
                 break;
                 
             case 'v':
-                printVersion();
-                if (DBG_MODE) logInfo("\t--version");
+                print_version();
+                if (DebugMode) log_info("\t--version");
                 break;
                 
             case '?':
-                printHelp();
+                print_help();
                 return TRUE;
 
             case 'f':
                 dbf_filename = optarg;
-                if (DBG_MODE) logInfo("\t--dbf = %s", dbf_filename);
+                if (DebugMode) log_info("\t--dbf = %s", dbf_filename);
                 break;
 
             case 'B':
                 start_rec = atol(optarg);
-                if (DBG_MODE) logInfo("\t--start_rec = %s", optarg);
+                if (DebugMode) log_info("\t--start_rec = %s", optarg);
                 break;
                                 
             case 'L':
                 limit = atoi(optarg);
-                if (DBG_MODE) logInfo("\t--limit = %s", optarg);
+                if (DebugMode) log_info("\t--limit = %s", optarg);
                 break;
 
             case 'S':
                 src_codepage = optarg;
-                if (DBG_MODE) logInfo("\t--src_codepage = %s", src_codepage);
+                if (DebugMode) log_info("\t--src_codepage = %s", src_codepage);
                 break;
 
             case 'D':
                 dst_codepage = optarg;
-                if (DBG_MODE) logInfo("\t--dst_codepage = %s", dst_codepage);
+                if (DebugMode) log_info("\t--dst_codepage = %s", dst_codepage);
                 break;
                 
             case 'C':
@@ -289,7 +290,7 @@ int run(int argc, char *argv[])
                     is_fields_cmd = FALSE;
                     is_length_cmd = TRUE;
                 }
-                if (DBG_MODE) logInfo("\t--cmd = %s", optarg);
+                if (DebugMode) log_info("\t--cmd = %s", optarg);
                 break;
                 
             default:

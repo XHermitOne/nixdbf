@@ -2,6 +2,7 @@
 * Модуль для работа с конфигурации.
 * сохранение и востановление параметров...
 * @file
+* @version 0.0.0.1
 */
 
 #include "config.h"
@@ -14,154 +15,154 @@ char CfgPath[] = ".nixdbf";           /**< Папка конфигурациро
 char CfgFileName[] = "nixdbf.cfg";    /**< Имя файла конфигурации основных параметров*/
 static char FullCfgFileName[MAX_PATH];
 
-Config_t config_strings[] =
+nix_config_t config_strings[] =
 {
-	{ "TEST",                     ""},
+    { "TEST",                     ""},
 };
 
 
-BOOL saveConfig (char *CFGFileName, Config_t *Strings, int Count)
+BOOL save_config(char *cfg_filename, nix_config_t *strings, int count)
 {
-	int	i = 0;
-	FILE *f;
+    int i = 0;
+    FILE *f;
 
-	if(DBG_MODE) logInfo("Saving config settings %s %i strings.\n", CFGFileName, Count);
-    
-	f = fopen (CFGFileName, "wt");
-	if (!f)
+    if (DebugMode) log_line("Saving config settings %s %i strings.\n", cfg_filename, count);
+
+    f = fopen(cfg_filename, "wt");
+    if (!f)
     {
-        if(DBG_MODE) logInfo("ERROR: Can't write the file %s \n", FullCfgFileName);
-		return FALSE;	// can't write the file, but don't complain
+        if (DebugMode) log_line("ERROR: Can't write the file %s \n", FullCfgFileName);
+        return FALSE;   // can't write the file, but don't complain
     }
 
-	for (i = 0; i < Count; i++)
-	{
-		fprintf(f, "%s\t\t\"%s\"\n", Strings[i].name, Strings[i].location);
-	}
+    for (i = 0; i < count; i++)
+    {
+        fprintf(f, "%s\t\t\"%s\"\n", strings[i].name, strings[i].location);
+    }
 
-	fclose (f);
+    fclose (f);
     return TRUE;
 }
 
 
-BOOL loadConfig(const char *CFGFileName, Config_t *Strings, int Count)
+BOOL load_config(const char *cfg_filename, nix_config_t *strings, int count)
 {
-	int i = 0; 
-	int len = 0;
-	FILE *f = NULL;
-	char def[STD_STR_LEN];
-	char strparm[100];
-	int parm = 0;
+    int i = 0;
+    int len = 0;
+    FILE *f = NULL;
+    char def[STD_STR_LEN];
+    char strparm[100];
+    int parm = 0;
 
-	if(DBG_MODE) logInfo("Loading config settings %s %i strings.\n", CFGFileName, Count);
+    if (DebugMode) log_line("Loading config settings %s %i strings.\n", cfg_filename, count);
 
-    f = fopen(CFGFileName, "rt");
-	if (f)
-	{
-		while (!feof(f))
-		{
-			if (fscanf(f, "%79s %[^\n]\n", def, strparm) == 2)
-			{
-                if(DBG_MODE) logInfo("Line: %s %s.\n", def, strparm);                
-				if (strparm[0] == '"') /* string values */
-				{
-                    for (i=0; i<Count; i++)
+    f = fopen(cfg_filename, "rt");
+    if (f)
+    {
+        while (!feof(f))
+        {
+            if (fscanf(f, "%79s %[^\n]\n", def, strparm) == 2)
+            {
+                if (DebugMode) log_line("Line: %s %s.\n", def, strparm);
+                if (strparm[0] == '"')  /* string values */
+                {
+                    for (i = 0; i < count; i++)
                     {
-                        if (!strcmp(def, Strings[i].name))
+                        if (!strcmp(def, strings[i].name))
                         {
-                            len = (int)strlen(strparm) - 2;
+                            len = (int) strlen(strparm) - 2;
                             if (len <= 0)
                             {
-                                Strings[i].location[0] = '\0';
+                                strings[i].location[0] = '\0';
                                 break;
                             }
                             if (len > 79)  len = 79;
-                            strncpy(Strings[i].location, strparm + 1, len);
-                            Strings[i].location[len] = '\0';
-                            if(DBG_MODE) logInfo("Name: %s Value: %s.\n", Strings[i].name, Strings[i].location);                
+                            strncpy(strings[i].location, strparm + 1, len);
+                            strings[i].location[len] = '\0';
+                            if (DebugMode) log_line("Name: %s Value: %s.\n", strings[i].name, strings[i].location);
                             break;
                         }
                     }
                 continue;
-				}
-
-			}
-		}
+                }
+            }
+        }
         fclose (f);
-	}
+    }
     else
     {
-        if(DBG_MODE) logInfo("ERROR: Cant read file %s \n", CFGFileName);
+        if (DebugMode) log_line("ERROR: Cant read file %s \n", cfg_filename);
         return FALSE;
     }
     return TRUE;
 }
 
 
-static BOOL createCfgPath(char *Path);
-char *getCfgPath(void)
+static BOOL create_config_path(char *Path);
+
+char *get_config_path(void)
 {
-    char *result = NULL;
-    char *home_path = getHomePath();
-    
-    result = (char*)calloc(strlen(home_path)+1+strlen(CfgPath)+1, sizeof(char));
-    strcpy(result, home_path);
-    strcat(result, "/");
-    strcat(result, CfgPath);
+    char *cfg_path = NULL;
+    char *home_path = get_home_path();
 
-    if (!dir_exists(result)) 
-        createCfgPath(result);
+    cfg_path = (char*) calloc(strlen(home_path) + 1 + strlen(CfgPath) + 1, sizeof(char));
+    strcpy(cfg_path, home_path);
+    strcat(cfg_path, "/");
+    strcat(cfg_path, CfgPath);
 
-    if(DBG_MODE) logInfo("GetCfgPath: %s\n", result);
-    
-    return result;
+    if (!dir_exists(cfg_path))
+        create_config_path(cfg_path);
+
+    if (DebugMode) log_line("GetCfgPath: %s\n", cfg_path);
+
+    return cfg_path;
 }
 
 /**
 *   Сгенерировать путь к конфигурационному файлу.
-*   По умолчанию Path=NULL
+*   По умолчанию Path = NULL
 */
-static BOOL createCfgPath(char *Path)
+static BOOL create_config_path(char *path)
 {
-    int do_free = 0;
-    char *conf_path = Path;
+    BOOL do_free = FALSE;
+    char *cfg_path = path;
 
-    if (conf_path == NULL)
+    if (cfg_path == NULL)
     {
-        conf_path = getCfgPath();
-        do_free = 1;
+        cfg_path = get_config_path();
+        do_free = TRUE;
     }
-        
-    BOOL result = (BOOL) mkpath(conf_path, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
-    if(DBG_MODE) logInfo("Create path: %s\n", conf_path);
+
+    BOOL result = (BOOL) mkpath(cfg_path, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+    if(DebugMode) log_line("Create path: %s\n", cfg_path);
 
     if (do_free)
-        free(conf_path);    
-        
+        free(cfg_path);
+
     return result;
 }
 
 
-static char *getCfgFileName(char *FileName)
+static char *get_config_filename(char *filename)
 {
-    char *filename = NULL;
-    char *conf_path = getCfgPath();
+    char *cfg_filename = NULL;
+    char *cfg_path = get_config_path();
 
-    if (FileName != NULL)
+    if (cfg_filename != NULL)
     {
-        filename = (char*)calloc(strlen(FileName)+1, sizeof(char));
-        strcpy(filename, FileName);
+        cfg_filename = (char*)calloc(strlen(filename) + 1, sizeof(char));
+        strcpy(cfg_filename, filename);
     }
     else
     {
-        filename = (char*)calloc(strlen(conf_path)+1+strlen(CfgFileName)+1, sizeof(char));
-        strcpy(filename, conf_path);
-        strcat(filename, "/");
-        strcat(filename, CfgFileName);
+        cfg_filename = (char*)calloc(strlen(cfg_path) + 1 + strlen(CfgFileName) + 1, sizeof(char));
+        strcpy(cfg_filename, cfg_path);
+        strcat(cfg_filename, "/");
+        strcat(cfg_filename, CfgFileName);
     }
 
-    free(conf_path);
-    
-    if(DBG_MODE) logInfo("GetCfgFileName: %s\n", filename);
-    return filename;
+    free(cfg_path);
+
+    if(DebugMode) log_line("GetCfgFileName: %s\n", cfg_filename);
+    return cfg_filename;
 }

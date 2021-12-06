@@ -22,7 +22,7 @@ commands=(
           # './nixdbf --debug --dbf=./tst/SB1111.DBF --cmd=FIELDS',
           #'./nixdbf --debug --dbf=./tst/SHIPPING.DBF --src_codepage=CP866 --dst_codepage=UTF-8',
           # './nixdbf --debug --dbf=./tst/SHIPPING.DBF --cmd=SELECT',
-          './nixdbf --debug --dbf=./tst/SHIPPING.DBF --cmd=LENGTH',
+          './nixdbf --debug --dbf=./tst/kladr.dbf --cmd=LENGTH',
           )
 
 

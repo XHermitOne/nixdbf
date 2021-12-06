@@ -1,6 +1,7 @@
 /**
 * Модуль сервисных функций
 * @file
+* @version 0.0.0.1
 */
 
 #if !defined( __TOOLS_H )
@@ -23,41 +24,35 @@
 #include <sys/types.h>
 #include <sys/statvfs.h>
 #include <sys/param.h>          /* MAXPATHLEN */
-//#include <sys/wait.h>
 
-#include "ictypes.h"
+#include "ext_types.h"
 #include "log.h"
+#include "strfunc.h"
 #include "main.h"
 
 #define MAX_NUM_LEN 20
 
-int checkParm(const char *check,int argc, char **argv);
+int check_parameters(const char *check, int argc, char **argv);
 
-void errBox(char *Fmt,...);
+void err_box(char *fmt,...);
 
-char sayError(char *msg);
+char print_error(char *msg);
 
-char sayMessage(char *Msg, int aOptions);
+char print_message(char *message, int options);
 
-char *getHomePath(void);       
+char *get_home_path(void);
 
 BOOL dir_exists(char *path);
 int mkpath(const char *path, mode_t mode);
 
-/**
-* Путь к папке конфига
-*/
-//char *getCfgPath(void);
-
-BOOL file_exists(char *FileName);
-int copy_file(char *to, char *from);
-BOOL del_file(char *FileName);
+BOOL file_exists(char *filename);
+BOOL del_file(char *filename);
 
 /**
 *   Прочитать файл и вернуть массив символов
 */
-unsigned int load_txt_file_size(char *FileName, char *result);
-char *load_txt_file(char *FileName);
+unsigned int load_txt_file_size(char *filename, char *result);
+char *load_txt_file(char *filename);
 
 /**
 *   Выбрать максимальное/минимальное значение из 2-х
@@ -83,17 +78,17 @@ char *long_to_time(long time);
 /**
 *   Нормализация пути
 */
-char *norm_path(char *src, size_t src_len, BOOL bFree);
+char *norm_path(char *src, size_t src_len, BOOL do_free);
 
 /**
 *   Конвертация представления пути из dos(C:\\path\\) в unix(C:/path/)
 */
-char *dos_to_unix_path(char *src, BOOL bFree);
+char *dos_to_unix_path(char *src, BOOL do_free);
 
 /**
 *   Поменять расширение в имени файла
 */
-char *change_filename_ext(char *filename, const char *new_ext, BOOL bFree);
+char *change_filename_ext(char *filename, const char *new_ext, BOOL do_free);
 
 /**
 *   Проверка на то же самый файл
@@ -104,15 +99,15 @@ BOOL is_samefile(const char *filename1, const char *filename2);
 /**
 *   Цвета
 */
-enum icPrintColor {
-    IC_NORMAL_COLOR_TEXT = 0,      // normal
-    IC_RED_COLOR_TEXT,             // red
-    IC_GREEN_COLOR_TEXT,           // green
-    IC_YELLOW_COLOR_TEXT,          // yellow
-    IC_BLUE_COLOR_TEXT,            // blue
-    IC_PURPLE_COLOR_TEXT,          // purple
-    IC_CYAN_COLOR_TEXT,            // cyan
-    IC_WHITE_COLOR_TEXT,           // white
+enum nix_print_color_t {
+    NORMAL_COLOR_TEXT = 0,      // normal
+    RED_COLOR_TEXT,             // red
+    GREEN_COLOR_TEXT,           // green
+    YELLOW_COLOR_TEXT,          // yellow
+    BLUE_COLOR_TEXT,            // blue
+    PURPLE_COLOR_TEXT,          // purple
+    CYAN_COLOR_TEXT,            // cyan
+    WHITE_COLOR_TEXT,           // white
 };
 /**
 *   Печать цветного текста

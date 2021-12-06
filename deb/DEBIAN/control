@@ -1,6 +1,6 @@
 Package: nixdbf
-Version: 0.7
-Architecture: i386
+Version: 1.1
+Architecture: amd64
 Maintainer: <xhermitone@gmail.com>
 Depends: 
 Section: contrib/otherosfs

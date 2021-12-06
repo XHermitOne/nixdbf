@@ -1,6 +1,7 @@
 /**
 * Модуль функций всё что связано с версией...
 * @file
+* @version 0.0.0.1
 */
 
 #if !defined( __VERSION_H )
@@ -10,10 +11,10 @@
 #include <string.h>
 #include <sys/sysinfo.h>
 
-char *getVersion(void);
-void printVersion(void);
-void printHelp(void);
-void printSysInfo(void);
+char *get_version(void);
+void print_version(void);
+void print_help(void);
+void print_system_info(void);
 
 
 #endif /*__VERSION_H*/

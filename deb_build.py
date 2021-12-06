@@ -7,16 +7,10 @@
 
 import os
 import os.path
+import platform
 
-__version__ = (0, 0, 2, 1)
+__version__ = (0, 0, 4, 1)
 __author__ = 'xhermit'
-
-PACKAGENAME='nixdbf'
-PACKAGE_VERSION='0.7'
-LINUX_VERSION='ubuntu16.04'
-LINUX_PLATFORM='i386'
-COPYRIGHT='<xhermitone@gmail.com>'
-DESCRIPTION='The Linux DBF file command-line control utility'
 
 #Цвета в консоли
 RED_COLOR_TEXT      =   '\x1b[31;1m'    # red
@@ -30,6 +24,89 @@ NORMAL_COLOR_TEXT   =   '\x1b[0m'       # normal
 
 DEFAULT_ENCODING = 'utf-8'
 
+
+def print_color_txt(sTxt, sColor=NORMAL_COLOR_TEXT):
+    txt = sColor + sTxt + NORMAL_COLOR_TEXT
+    print(txt)
+
+def getPlatform():
+    """
+    Get platform name.
+    """
+    return platform.uname()[0].lower()
+
+def isWindowsPlatform():
+    return getPlatform() == 'windows'
+
+
+def isLinuxPlatform():
+    return getPlatform() == 'linux'
+
+def getOSVersion():
+    """
+    Get OS version.
+    """
+    try:
+        if isLinuxPlatform():
+            import distro
+            return distro.linux_distribution()
+        elif isWindowsPlatform():
+            try:
+                cmd = 'wmic os get Caption'
+                p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE)
+            except FileNotFoundError:
+                print_color_txt('WMIC.exe was not found. Make sure \'C:\Windows\System32\wbem\' is added to PATH', RED_COLOR_TEXT)
+                return None
+
+            stdout, stderror = p.communicate()
+
+            output = stdout.decode('UTF-8', 'ignore')
+            lines = output.split('\r\r')
+            lines = [line.replace('\n', '').replace('  ', '') for line in lines if len(line) > 2]
+            return lines[-1]
+    except:
+        print_color_txt(u'Error get OS version', RED_COLOR_TEXT)
+        raise
+    return None
+
+def getPlatformKernel():
+    """
+    Get kernel.
+    """
+    try:
+        return platform.release()
+    except:
+        print_color_txt(u'Error get platform kernel', RED_COLOR_TEXT)
+        raise
+    return None
+
+
+def getCPUSpec():
+    """
+    Get CPU specification.
+    """
+    try:
+        return platform.processor()
+    except:
+        print_color_txt(u'Error get CPU specification', RED_COLOR_TEXT)
+        raise
+    return None
+
+def is64Linux():
+    """
+    Определить разрядность Linux.
+    @return: True - 64 разрядная ОС Linux. False - нет.
+    """
+    cpu_spec = getCPUSpec()
+    return cpu_spec == 'x86_64'
+
+PACKAGENAME='nixdbf'
+PACKAGE_VERSION='1.1'
+LINUX_VERSION='-'.join([str(x).lower() for x in getOSVersion()[:-1]])
+LINUX_PLATFORM = 'amd64' if is64Linux() else 'i386'
+COPYRIGHT='<xhermitone@gmail.com>'
+DESCRIPTION='The Linux DBF file command-line control utility'
+
 DEBIAN_CONTROL_FILENAME = './deb/DEBIAN/control'
 DEBIAN_CONTROL_BODY = '''Package: %s
 Version: %s
@@ -42,12 +119,6 @@ Description: %s
 ''' % (PACKAGENAME, PACKAGE_VERSION, LINUX_PLATFORM, COPYRIGHT, DESCRIPTION)
 
 
-def print_color_txt(sTxt, sColor=NORMAL_COLOR_TEXT):
-    if type(sTxt) == unicode:
-        sTxt = sTxt.encode('DEFAULT_ENCODING')
-    txt = sColor + sTxt + NORMAL_COLOR_TEXT
-    print(txt)
-
 def sys_cmd(sCmd):
     """
     Выполнить комманду ОС.
@@ -59,6 +130,13 @@ def compile_and_link():
     """
     Компиляция и сборка.
     """
+    if not os.path.exists('./obj'):
+        os.makedirs('./obj')
+    if not os.path.exists('./lib'):
+        os.makedirs('./lib')
+    if not os.path.exists('./include'):
+        os.makedirs('./include')
+
     sys_cmd('make clean')
     sys_cmd('make')
 
@@ -66,6 +144,15 @@ def build_deb():
     """
     Сборка пакета.
     """
+    if not os.path.exists('./deb/DEBIAN'):
+        os.makedirs('./deb/DEBIAN')
+    if not os.path.exists('./deb/usr/lib'):
+        os.makedirs('./deb/usr/lib')
+    if not os.path.exists('./deb/usr/include'):
+        os.makedirs('./deb/usr/include')
+    if not os.path.exists('./deb/usr/bin'):
+        os.makedirs('./deb/usr/bin')
+
     # Прописать файл control
     try:
         control_file = None 
@@ -81,6 +168,14 @@ def build_deb():
         print_color_txt('ERROR! Write control', RED_COLOR_TEXT)
         raise
         
+    if os.path.exists('./include/nixdbf.h'):
+        sys_cmd('cp ./include/nixdbf.h ./deb/usr/include')
+    else:
+        print_color_txt('File <./include/nixdbf.h> not found', RED_COLOR_TEXT)
+    if os.path.exists('./lib/libnixdbf.so'):
+        sys_cmd('cp ./lib/libnixdbf.so ./deb/usr/lib')
+    else:
+        print_color_txt('File <./lib/libnixdbf.so> not found', RED_COLOR_TEXT)
     if os.path.exists('nixdbf'):
         # Копировать в папку сборки файл программы
         sys_cmd('cp ./nixdbf ./deb/usr/bin')
@@ -93,7 +188,7 @@ def build_deb():
         else:
             print_color_txt('ERROR! DEB build error', RED_COLOR_TEXT)
     else:
-        print_color_txt('ERROR! Compile error', RED_COLOR_TEXT)
+        print_color_txt('ERROR! Compile error. File <nixdbf> not found', RED_COLOR_TEXT)
 
 
 def build():

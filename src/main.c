@@ -21,22 +21,22 @@ int main (int argc, char **argv)
     
     log_open(NULL);
     
-    if (checkParm("--help",argc,argv) || checkParm("-h",argc,argv) || checkParm("-?",argc,argv))
+    if (check_parameters("--help", argc, argv) || check_parameters("-h", argc, argv) || check_parameters("-?", argc, argv))
     {
-        printHelp();
+        print_help();
         return 0;
     }
 
-    if (checkParm("--version",argc,argv) || checkParm("-v",argc,argv))
+    if (check_parameters("--version", argc, argv) || check_parameters("-v", argc, argv))
     {
-        printVersion ();
+        print_version ();
         return 0;
     }
 
-    if ((checkParm("--debug",argc,argv) || checkParm("-D",argc,argv)) || (checkParm("--log",argc,argv) || checkParm("-L",argc,argv)))
-        DBG_MODE = TRUE;
+    if ((check_parameters("--debug", argc, argv) || check_parameters("-D", argc, argv)) || (check_parameters("--log", argc, argv) || check_parameters("-L", argc, argv)))
+        DebugMode = TRUE;
     else
-        DBG_MODE = FALSE;
+        DebugMode = FALSE;
 
     result = run(argc, argv);
 

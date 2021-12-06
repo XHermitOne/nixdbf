@@ -2,34 +2,37 @@
 * Модуль функций всё что связано с версией...
 * в этом модуле будет хранится версия программы
 *
-* version - "vXX.YY [DD.MM.YEAR]
-*   XX - старший разряд версии 
-*   YY - младший, реально кол-во фиксов, исправленных багов в версии XX
+* version - "MajorVersion.MinorVersion [DD.MM.YEAR]
+*   MajorVersion - старший разряд версии
+*   MinorVersion - младший, реально кол-во фиксов, исправленных багов в версии XX
 *        смотри файлик changelog.txt
 * @file
+* @version 0.0.0.1
 */
+
 
 #include "version.h"
 
-const int XV = 0;  /**< XX */
-const int YV = 7;  /**< YY */
+const int MajorVersion = 1;  /**< старший разряд версии */
+const int MinorVersion = 1;  /**< младший разряд версии */
 
-static char version[100];
-char *getVersion(void)
+
+static char Version[100];
+char *get_version(void)
 {
     char build_time[100];
     strcpy(build_time, __TIMESTAMP__);
-    sprintf(version, "v%i.%2i [%s]", XV, YV, build_time);
-    return version;
+    sprintf(Version, "v%i.%2i [%s]", MajorVersion, MinorVersion, build_time);
+    return Version;
 }
 
 /**
 * Вывести на экран версию программы
 */
-void printVersion(void)
+void print_version(void)
 {
-    printf("NixDBF version: ");
-    printf(getVersion());
+    printf("NixDbf version: ");
+    printf(get_version());
     printf("\n");
 }
 
@@ -47,25 +50,15 @@ static char HelpTxt[]="\n\
         --log|-L            Включить режим журналирования\n\
 \n\
     [Параметры запуска]\n\
-        --dbf=              DBF файл \n\
-        --cmd=              Комманда DBF: SELECT, DELETE, CLEAR, FIELDS, LENGTH и т.п \n\
-        --where=            Параметры фильтрации\n\
-        --limit=            Ограничение количества записей\n\
-        --fields=           Отображаемые поля таблицы\n\
-        --order_by=         Сортировка по полю\n\
-        --reverse           Сортировка в обратном порядке\n\
-        --start_rec=        Первая обрабатываемая запись\n\        
-        --src_codepage=     Кодовая страница DBF таблицы\n\
-        --dst_codepage=     Кодовая страница, в которой необходимо вывести данные\n\
 \n\
 ";
 
 /**
 * Вывести на экран помощь
 */
-void printHelp(void)
+void print_help(void)
 {
-    printf("NixDBF программа вывода на экран результатов запроса к таблице DBF: \n");
+    printf("NixDbf: Программа отображения на экране содержимого DBF файла: \n");
     printf(HelpTxt);
     printf("\n");
 }
@@ -73,7 +66,7 @@ void printHelp(void)
 /**
 * Вывести на экран системной информации(для выявления утечек памяти)
 */
-void printSysInfo(void)
+void print_system_info(void)
 {
     struct sysinfo info;
 

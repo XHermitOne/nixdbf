@@ -1,31 +1,33 @@
 /**
 * Модуль функций записи в лог
 * @file
+* @version 0.0.0.1
 */
 
 #if !defined( __LOG_H )
 #define __LOG_H
 
-#include "ictypes.h"
+#include "ext_types.h"
 
 #define MAX_LOG_MSG 1024
 
 /**
 * Менеджер лога
 */
-typedef struct 
+typedef struct
 {
     FILE *out;
     BOOL isNew;
-} LogInit;
+} nix_log_t;
 
 
-struct LogInit* log_open(char *LogName);
+nix_log_t* log_open(char *log_name);
 BOOL log_close();
 
-void logInfo(char *S, ...);
-void logErr(char *S, ...);
-void logWarning(char *S, ...);
-void log_color_line(unsigned int iColor, char *S, ...);
+void log_line(char *fmt, ...);
+void log_info(char *fmt, ...);
+void log_err(char *fmt, ...);
+void log_warning(char *fmt, ...);
+void log_color_line(unsigned int color, char *fmt, ...);
 
 #endif

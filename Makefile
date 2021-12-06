@@ -29,22 +29,26 @@ LIBS = -lm
 BASELIBS = -lm 
 X11_INC = 
 X11_LIB = 
-CAIRO_LIBS = $(shell pkg-config --cflags --libs cairo)
+# CAIRO_LIBS = $(shell pkg-config --cflags --libs cairo)
+FPIC = -fPIC
+SOFLAGS = -shared
+NIXDBF_LIBS = -L/home/xhermit/dev/prj/work/nixdbf/lib/ -lnixdbf
 
 # Directories
 TOPSRCDIR = .
 TOPOBJDIR = .
 SRCDIR    = .
-CAIRO_INCLUDEDIR = $(includedir)/cairo
+# CAIRO_INCLUDEDIR = $(includedir)/cairo
+NIXDBF_INCLUDEDIR = /home/xhermit/dev/prj/work/nixdbf/include
 
 # CPPFLAGS += $(CXX_FLAGS)
-# CPPFLAGS += -I$(CAIRO_INCLUDEDIR)
-# LDFLAGS += $(CAIRO_LIBS)
+CPPFLAGS += -I$(NIXDBF_INCLUDEDIR)
+LDFLAGS += $(NIXDBF_LIBS)
 
 
 # ВНИМАНИЕ! Сначала ставиться -o <выходной файл> затем <объектные файлы> и лишь в конце <флаги линковщика>
-nixdbf: main.o run.o version.o log.o strfunc.o tools.o config.o dbf.o
-	$(CC) -o nixdbf ./obj/main.o ./obj/run.o ./obj/version.o ./obj/log.o ./obj/strfunc.o ./obj/tools.o ./obj/config.o ./obj/dbf.o $(LDFLAGS)
+nixdbf: library main.o run.o version.o log.o strfunc.o tools.o config.o
+	$(CC) -o nixdbf ./obj/main.o ./obj/run.o ./obj/version.o ./obj/log.o ./obj/strfunc.o ./obj/tools.o ./obj/config.o $(LDFLAGS)
 
 main.o: ./src/main.c
 	$(CC) -c  $(CFLAGS) $(CPPFLAGS) ./src/main.c
@@ -74,9 +78,14 @@ config.o: ./src/config.c
 	$(CC) -c  $(CFLAGS) $(CPPFLAGS) ./src/config.c
 	mv config.o ./obj/config.o
 
-dbf.o: ./src/dbf.c
-	$(CC) -c  $(CFLAGS) $(CPPFLAGS) ./src/dbf.c
+dbf.so: ./src/dbf.c
+	$(CC) $(FPIC) -c $(CFLAGS) $(CPPFLAGS) ./src/dbf.c
+	$(CC) $(SOFLAGS) -olibnixdbf.so dbf.o
 	mv dbf.o ./obj/dbf.o
+	cp ./src/dbf.h ./include/nixdbf.h
+	mv libnixdbf.so ./lib/libnixdbf.so
+
+library: dbf.so
 
 clean:
 	rm -f ./src/*.o ./obj/*.o ./*.o ./tst/* nixdbf test
