@@ -1,11 +1,12 @@
 /**
 * Модуль определения дополнительных типов
 * @file
+* @version 0.0.0.1
 */
 
 
-#if !defined( __ICTYPES_H )
-#define __ICTYPES_H
+#if !defined( __EXT_TYPES_H )
+#define __EXT_TYPES_H
 
 typedef int                 BOOL;
 typedef unsigned long       DWORD;
@@ -36,6 +37,9 @@ typedef unsigned short      WORD;
 
 typedef DWORD COLORREF;
 
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define RANDOM(a) (rand() % (a))
 
-#endif /*__ICTYPES_H*/
+#endif /*__EXT_TYPES_H*/
 
