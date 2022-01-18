@@ -1,7 +1,7 @@
 /**
 * Модуль функций записи в лог
 * @file
-* @version 0.0.1.1
+* @version 0.0.2.3
 */
 
 #include <stdio.h>
@@ -17,7 +17,7 @@
 
 static nix_log_t Log;
 
-char DefaultLogFileName[] = "/nixplot.log";     /**< Имя файла лога по умолчанию*/
+char DefaultLogFileName[] = "/nixdbf.log";     /**< Имя файла лога по умолчанию*/
 
 /**
 * Текущее время-дата
@@ -41,7 +41,7 @@ char *get_current_datetime()
 *       LogName - Имя файла лога
 *           Если NULL, то берется имя по умолчанию
 */
-nix_log_t* log_open(char *log_name)
+nix_log_t* open_log(char *log_name)
 {
     if (log_name == NULL)
         log_name = DefaultLogFileName;
@@ -57,7 +57,7 @@ nix_log_t* log_open(char *log_name)
     Log.out = fopen(full_log_filename, "a");
     fprintf(Log.out, "[START LOG] %s - - - - - - - - - - - - - - - - - - - - -\n", get_current_datetime());
 
-    full_log_filename = strfree(full_log_filename);
+    destroy_str_and_null(full_log_filename);
 
     // Освобождаем память
     free(cfg_path);
@@ -66,7 +66,7 @@ nix_log_t* log_open(char *log_name)
 }
 
 
-BOOL log_close()
+BOOL close_log()
 {
     if (Log.out)
     {
@@ -81,7 +81,7 @@ BOOL log_close()
 /**
 * Добавить строчку в лог
 */
-void log_line(char *fmt, ...)
+void add_log_line(char *fmt, ...)
 {
     char buffer[MAX_LOG_MSG];
     va_list ap;
@@ -89,7 +89,7 @@ void log_line(char *fmt, ...)
     va_start(ap, fmt);
     vsprintf(buffer, fmt, ap);
 
-    log_color_line(CYAN_COLOR_TEXT, buffer);
+    print_log_color_line(CYAN_COLOR_TEXT, buffer);
 
     va_end(ap);
 }
@@ -105,7 +105,7 @@ void log_info(char *fmt, ...)
     va_start(ap, fmt);
     vsprintf(buffer, fmt, ap);
 
-    log_color_line(GREEN_COLOR_TEXT, buffer);
+    print_log_color_line(GREEN_COLOR_TEXT, buffer);
 
     va_end(ap);
 }
@@ -121,7 +121,7 @@ void log_err(char *fmt, ...)
     va_start(ap, fmt);
     vsprintf(buffer, fmt, ap);
 
-    log_color_line(RED_COLOR_TEXT, buffer);
+    print_log_color_line(RED_COLOR_TEXT, buffer);
 
     va_end(ap);
 }
@@ -138,13 +138,13 @@ void log_warning(char *fmt, ...)
     va_start(ap, fmt);
     vsprintf(buffer, fmt, ap);
 
-    log_color_line(YELLOW_COLOR_TEXT, buffer);
+    print_log_color_line(YELLOW_COLOR_TEXT, buffer);
 
     va_end(ap);
 }
 
 
-void log_color_line(unsigned int color, char *fmt, ...)
+void print_log_color_line(unsigned int color, char *fmt, ...)
 {
     if (Log.out)
     {
@@ -168,6 +168,7 @@ void log_color_line(unsigned int color, char *fmt, ...)
 
         fprintf(Log.out, "    %s %s %s\n", get_current_datetime(), signature, msg);
         print_color_txt(color, "%s %s %s\n", get_current_datetime(), signature, msg);
+        print_color_txt(NORMAL_COLOR_TEXT, "");
         fflush(Log.out);
     }
 }

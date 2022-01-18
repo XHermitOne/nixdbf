@@ -2,7 +2,7 @@
 * Модуль для работа с конфигурации.
 * сохранение и востановление параметров...
 * @file
-* @version 0.0.0.1
+* @version 0.0.1.1
 */
 
 #include "config.h"
@@ -26,12 +26,12 @@ BOOL save_config(char *cfg_filename, nix_config_t *strings, int count)
     int i = 0;
     FILE *f;
 
-    if (DebugMode) log_line("Saving config settings %s %i strings.\n", cfg_filename, count);
+    if (DebugMode) add_log_line("Saving config settings %s %i strings.\n", cfg_filename, count);
 
     f = fopen(cfg_filename, "wt");
     if (!f)
     {
-        if (DebugMode) log_line("ERROR: Can't write the file %s \n", FullCfgFileName);
+        if (DebugMode) add_log_line("ERROR: Can't write the file %s \n", FullCfgFileName);
         return FALSE;   // can't write the file, but don't complain
     }
 
@@ -54,7 +54,7 @@ BOOL load_config(const char *cfg_filename, nix_config_t *strings, int count)
     char strparm[100];
     int parm = 0;
 
-    if (DebugMode) log_line("Loading config settings %s %i strings.\n", cfg_filename, count);
+    if (DebugMode) add_log_line("Loading config settings %s %i strings.\n", cfg_filename, count);
 
     f = fopen(cfg_filename, "rt");
     if (f)
@@ -63,7 +63,7 @@ BOOL load_config(const char *cfg_filename, nix_config_t *strings, int count)
         {
             if (fscanf(f, "%79s %[^\n]\n", def, strparm) == 2)
             {
-                if (DebugMode) log_line("Line: %s %s.\n", def, strparm);
+                if (DebugMode) add_log_line("Line: %s %s.\n", def, strparm);
                 if (strparm[0] == '"')  /* string values */
                 {
                     for (i = 0; i < count; i++)
@@ -79,7 +79,7 @@ BOOL load_config(const char *cfg_filename, nix_config_t *strings, int count)
                             if (len > 79)  len = 79;
                             strncpy(strings[i].location, strparm + 1, len);
                             strings[i].location[len] = '\0';
-                            if (DebugMode) log_line("Name: %s Value: %s.\n", strings[i].name, strings[i].location);
+                            if (DebugMode) add_log_line("Name: %s Value: %s.\n", strings[i].name, strings[i].location);
                             break;
                         }
                     }
@@ -91,7 +91,7 @@ BOOL load_config(const char *cfg_filename, nix_config_t *strings, int count)
     }
     else
     {
-        if (DebugMode) log_line("ERROR: Cant read file %s \n", cfg_filename);
+        if (DebugMode) add_log_line("ERROR: Cant read file %s \n", cfg_filename);
         return FALSE;
     }
     return TRUE;
@@ -110,10 +110,10 @@ char *get_config_path(void)
     strcat(cfg_path, "/");
     strcat(cfg_path, CfgPath);
 
-    if (!dir_exists(cfg_path))
+    if (!exists_dir(cfg_path))
         create_config_path(cfg_path);
 
-    if (DebugMode) log_line("GetCfgPath: %s\n", cfg_path);
+    if (DebugMode) add_log_line("GetCfgPath: %s\n", cfg_path);
 
     return cfg_path;
 }
@@ -134,7 +134,7 @@ static BOOL create_config_path(char *path)
     }
 
     BOOL result = (BOOL) mkpath(cfg_path, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
-    if(DebugMode) log_line("Create path: %s\n", cfg_path);
+    if(DebugMode) add_log_line("Create path: %s\n", cfg_path);
 
     if (do_free)
         free(cfg_path);
@@ -163,6 +163,6 @@ static char *get_config_filename(char *filename)
 
     free(cfg_path);
 
-    if(DebugMode) log_line("GetCfgFileName: %s\n", cfg_filename);
+    if(DebugMode) add_log_line("GetCfgFileName: %s\n", cfg_filename);
     return cfg_filename;
 }

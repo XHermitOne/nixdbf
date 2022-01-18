@@ -1,7 +1,7 @@
 /**
 * Модуль главных структур программы и основных запускающих функций
 * @file
-* @version 0.0.0.1
+* @version 0.0.1.2
 */
 
 #include "main.h"
@@ -23,6 +23,8 @@ void print_all_records(char *dbf_filename, char *src_codepage, char *dst_codepag
     int err = open_dbf(dbf_filename);
     int count_field = get_field_count_dbf();
     
+    if (DebugMode) log_info("Print all records");    
+
     if ( err == 0)
     {
         while (!eof_dbf())
@@ -30,8 +32,9 @@ void print_all_records(char *dbf_filename, char *src_codepage, char *dst_codepag
             for (int i = 0; i < count_field; i++)
             {
                 char *value = get_value_by_num_dbf(i);
-                value = str_encoding(value, src_codepage, dst_codepage, FALSE);
-                printf(value);
+                char *encoded = create_str_encoding(value, src_codepage, dst_codepage);
+                printf(encoded);
+                destroy_str_and_null(encoded);
                 // За последним значением разделитель ставить не надо
                 if ( i != (count_field - 1) )
                     printf("|");
@@ -56,27 +59,31 @@ void print_all_records(char *dbf_filename, char *src_codepage, char *dst_codepag
 *   @param limit Ограничение выводимых записей. Если -1, то ограничения нет.
 */
 void print_record_range(char *dbf_filename, char *src_codepage, char *dst_codepage,
-                        long start_rec, int limit)
+                        unsigned long start_rec, int limit)
 {
     int err = open_dbf(dbf_filename);
     int count_field = get_field_count_dbf();
     
+    if (DebugMode) log_info("Print record range. Start record: %d. Limit: %d.", start_rec, limit);    
   
-    if ( err == 0)
+    if (err == 0)
     {
         if (start_rec > 0)
             err = goto_dbf(start_rec);
         
-        if (err == 0 )
+        if (err == 0)
         {
-            unsigned int i_rec = 0;
+            unsigned int i_rec = 0;            
+                
             while (!eof_dbf())
             {
-                for (int i = 0; i < count_field; i++)
+                for (unsigned int i = 0; i < count_field; i++)
                 {
-                    char *value = get_value_by_num_dbf(i);
-                    value = str_encoding(value, src_codepage, dst_codepage, FALSE);
-                    printf(value);
+                    char *value = get_value_by_num_dbf(i);                    
+                    char *encoded = create_str_encoding(value, src_codepage, dst_codepage);
+                    // if (DebugMode) log_info("%d. Value: %s (%s -> %s)", i, value, src_codepage, dst_codepage);
+                    printf(encoded);
+                    destroy_str_and_null(encoded);
                     // За последним значением разделитель ставить не надо
                     if ( i != (count_field - 1) )
                         printf("|");
@@ -89,7 +96,11 @@ void print_record_range(char *dbf_filename, char *src_codepage, char *dst_codepa
                     break;
             }
         }
+        else
+            if (DebugMode) log_warning("Error goto <%d> record in DBF file <%s>", start_rec, dbf_filename);    
     }
+    else
+        if (DebugMode) log_warning("Error open DBF file <%s>", dbf_filename);    
     
     if ( err != 0 )
         print_error_dbf(err);
@@ -158,15 +169,18 @@ void print_record_count(char *dbf_filename)
 void print_select(char *dbf_filename, char **fields, 
                   char *filter_field, char *filter_value,
                   char *order_by, BOOL is_reverse, 
-                  long start_rec, int limit,
+                  unsigned long start_rec, int limit,
                   char *src_codepage, char *dst_codepage)
 {
+    if (DebugMode) log_info("Print SELECT");
     if ( (fields == NULL) && (filter_field == NULL) && (order_by == NULL) && (start_rec == 0) && (limit == -1) )
         // Тупо выводим все записи 
         return print_all_records(dbf_filename, src_codepage, dst_codepage);
     else if ( (fields == NULL) && (filter_field == NULL) && (order_by == NULL) && (start_rec >= 0) && (limit > 0) )
         // Вывести диапазон строк
         return print_record_range(dbf_filename, src_codepage, dst_codepage, start_rec, limit);
+    else
+        if (DebugMode) log_warning("SELECT. Not supported mode");    
 }
                   
 
@@ -182,7 +196,7 @@ int run(int argc, char *argv[])
     BOOL is_fields_cmd = FALSE;     
     BOOL is_length_cmd = FALSE;     
     char *dbf_filename = NULL;
-    long start_rec = 0;
+    unsigned long start_rec = 0;
     int limit = -1;
     
     // Используемые кодовые страницы
@@ -238,7 +252,7 @@ int run(int argc, char *argv[])
 
             case 'f':
                 dbf_filename = optarg;
-                if (DebugMode) log_info("\t--dbf = %s", dbf_filename);
+                if (DebugMode) log_info("\t--dbf = %s [%s]", dbf_filename, (exists_file(dbf_filename))?"+":"-");
                 break;
 
             case 'B':
@@ -302,8 +316,8 @@ int run(int argc, char *argv[])
     if (is_select_cmd)    
         print_select(dbf_filename, NULL, NULL, NULL, NULL, FALSE, start_rec, limit, 
                      src_codepage, dst_codepage);
-    else if (is_delete_cmd)    
-        ;
+    // else if (is_delete_cmd)    
+    //     ;
     else if (is_fields_cmd)
         print_fields(dbf_filename);
     else if (is_length_cmd)

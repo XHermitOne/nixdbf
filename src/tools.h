@@ -1,7 +1,7 @@
 /**
 * Модуль сервисных функций
 * @file
-* @version 0.0.0.1
+* @version 0.0.1.3
 */
 
 #if !defined( __TOOLS_H )
@@ -42,10 +42,10 @@ char print_message(char *message, int options);
 
 char *get_home_path(void);
 
-BOOL dir_exists(char *path);
+BOOL exists_dir(char *path);
 int mkpath(const char *path, mode_t mode);
 
-BOOL file_exists(char *filename);
+BOOL exists_file(char *filename);
 BOOL del_file(char *filename);
 
 /**
@@ -66,7 +66,7 @@ char * dtoa(double n);
 /**
 *   Конвертация строки в число double
 */
-double str2double(char *value);
+double str_to_double(char *value);
 
 int bytes_to_int(BYTE *bytes);
 double bytes_to_double(BYTE *bytes);
@@ -78,22 +78,22 @@ char *long_to_time(long time);
 /**
 *   Нормализация пути
 */
-char *norm_path(char *src, size_t src_len, BOOL do_free);
+char *create_norm_path(char *src, size_t src_len);
 
 /**
 *   Конвертация представления пути из dos(C:\\path\\) в unix(C:/path/)
 */
-char *dos_to_unix_path(char *src, BOOL do_free);
+char *create_dos_to_unix_path(char *src);
 
 /**
 *   Поменять расширение в имени файла
 */
-char *change_filename_ext(char *filename, const char *new_ext, BOOL do_free);
+char *create_change_filename_ext(char *filename, const char *new_ext);
 
 /**
 *   Проверка на то же самый файл
 */
-BOOL is_samefile(const char *filename1, const char *filename2);
+BOOL is_same_file(const char *filename1, const char *filename2);
 
 
 /**

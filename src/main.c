@@ -19,7 +19,7 @@ int main (int argc, char **argv)
 {
     int result = 0;
     
-    log_open(NULL);
+    open_log(NULL);
     
     if (check_parameters("--help", argc, argv) || check_parameters("-h", argc, argv) || check_parameters("-?", argc, argv))
     {
@@ -40,7 +40,7 @@ int main (int argc, char **argv)
 
     result = run(argc, argv);
 
-    log_close();
+    close_log();
     
     return result;
 }

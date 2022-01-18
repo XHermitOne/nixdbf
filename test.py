@@ -22,7 +22,9 @@ commands=(
           # './nixdbf --debug --dbf=./tst/SB1111.DBF --cmd=FIELDS',
           #'./nixdbf --debug --dbf=./tst/SHIPPING.DBF --src_codepage=CP866 --dst_codepage=UTF-8',
           # './nixdbf --debug --dbf=./tst/SHIPPING.DBF --cmd=SELECT',
-          './nixdbf --debug --dbf=./tst/kladr.dbf --cmd=LENGTH',
+          # './nixdbf --debug --dbf=./tst/kladr.dbf --start_rec=1000000 --limit=10',
+          # './nixdbf --debug --dbf=./tst/kladr.dbf --cmd=FIELDS',
+	  './nixdbf --dbf=./tst/export.dbf --start_rec=10 --limit=10 --cmd=SELECT',
           )
 
 

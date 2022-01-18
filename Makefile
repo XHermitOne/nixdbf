@@ -88,5 +88,5 @@ dbf.so: ./src/dbf.c
 library: dbf.so
 
 clean:
-	rm -f ./src/*.o ./obj/*.o ./*.o ./tst/* nixdbf test
+	rm -f ./src/*.o ./obj/*.o ./*.o nixdbf test
 

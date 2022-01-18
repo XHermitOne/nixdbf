@@ -1,7 +1,7 @@
 /**
 * Модуль сервисных функций
 * @file
-* @version 0.0.0.1
+* @version 0.0.1.3
 */
 
 #include "tools.h"
@@ -39,8 +39,8 @@ void err_box(char *fmt,...)
     va_start(ap, fmt);
     vsprintf(buffer, fmt, ap);
 
-    log_color_line(RED_COLOR_TEXT, "Error: ");
-    log_color_line(RED_COLOR_TEXT, buffer);
+    print_log_color_line(RED_COLOR_TEXT, "Error: ");
+    print_log_color_line(RED_COLOR_TEXT, buffer);
 
     va_end(ap);
 }
@@ -70,12 +70,12 @@ char *get_home_path(void)
 /**
 * Проверить существует ли директория
 */
-BOOL dir_exists(char *path)
+BOOL exists_dir(char *path)
 {
     BOOL result = FALSE;
     struct stat st;
 
-    if (!strempty(path))
+    if (!is_str_empty(path))
         result = (BOOL) (stat(path, &st) == 0);
     return result;
 }
@@ -94,7 +94,7 @@ static int do_mkdir(const char *path, mode_t mode)
     }
     else if (!S_ISDIR(st.st_mode))
     {
-        if (DebugMode) log_line("ERROR: %s is not directory", path);
+        if (DebugMode) add_log_line("ERROR: %s is not directory", path);
         status = -1;
     }
 
@@ -113,24 +113,24 @@ int mkpath(const char *path, mode_t mode)
     char *pp = NULL;
     char *sp = NULL;
     int status = 0;
-    char *copypath = strcopy(path);
+    char *copy_path = create_str_clone(path);
 
     status = 0;
-    pp = copypath;
+    pp = copy_path;
     while (status == 0 && (sp = strchr(pp, '/')) != 0)
     {
         if (sp != pp)
         {
             /* Neither root nor double slash in path */
             *sp = '\0';
-            status = do_mkdir(copypath, mode);
+            status = do_mkdir(copy_path, mode);
             *sp = '/';
         }
         pp = sp + 1;
     }
     if (status == 0)
         status = do_mkdir(path, mode);
-    copypath = strfree(copypath);
+    destroy_str_and_null(copy_path);
     return (status);
 }
 
@@ -139,10 +139,10 @@ int mkpath(const char *path, mode_t mode)
 * Cуществует ли файл
 * @return TRUE  - exist / FALSE - don't exist
 */
-BOOL file_exists(char *filename)
+BOOL exists_file(char *filename)
 {
     BOOL exists = FALSE;
-    if (!strempty(filename))
+    if (!is_str_empty(filename))
     {
         FILE *in = fopen(filename, "rb");
         if (in != NULL)
@@ -183,7 +183,7 @@ unsigned int load_txt_file_size(char *filename, char *result)
     if (f == NULL)
     {
         result = NULL;
-        if (DebugMode) log_line("ERROR. load_txt_file_size. Open file <%s>", filename);
+        if (DebugMode) add_log_line("ERROR. load_txt_file_size. Open file <%s>", filename);
         return -1; // -1 means file opening fail
     }
     fseek(f, 0, SEEK_END);
@@ -192,13 +192,13 @@ unsigned int load_txt_file_size(char *filename, char *result)
     result = (char *) malloc(size + 1);
     if (size != fread(result, sizeof(char), size, f))
     {
-        result = strfree(result);
-        if (DebugMode) log_line("ERROR. load_txt_file_size. Read file <%s>", filename);
+        destroy_str_and_null(result);
+        if (DebugMode) add_log_line("ERROR. load_txt_file_size. Read file <%s>", filename);
         return -2; // -2 means file reading fail
     }
     fclose(f);
     result[size] = 0;
-    if (DebugMode) log_line("INFO. load_txt_file_size. File <%s>\tSize <%d>", filename, size);
+    if (DebugMode) add_log_line("INFO. load_txt_file_size. File <%s>\tSize <%d>", filename, size);
     return size;
 }
 
@@ -223,7 +223,7 @@ char *load_txt_file(char *filename)
 
     if (size != fread(result, sizeof(char), size, f))
     {
-        result= strfree(result);
+        destroy_str_and_null(result);
         if (DebugMode) print_color_txt(RED_COLOR_TEXT, "ERROR. load_txt_file. Read file <%s>\n", filename);
         return NULL;
     }
@@ -378,7 +378,7 @@ char *dtoa(double n)
 /**
 *   Конвертация строки в число double
 */
-double str2double(char *value)
+double str_to_double(char *value)
 {
     return strtod(value, NULL);
 }
@@ -449,9 +449,8 @@ long get_now_time(void)
 *   Нормализация пути
 *   По умолчанию:
 *       src_len=-1
-*       bFree=FALSE
 */
-char *norm_path(char *src, size_t src_len, BOOL do_free)
+char *create_norm_path(char *src, size_t src_len)
 {
     char * res = NULL;
     size_t res_len;
@@ -529,55 +528,44 @@ char *norm_path(char *src, size_t src_len, BOOL do_free)
     }
     res[res_len] = '\0';
 
-    if (do_free)
-        // src = strfree(src);
-        strfree(src);
-
     return res;
 }
 
 
 /**
 *   Конвертация представления пути из dos(C:\\path\\) в unix(C:/path/)
-*   По умолчанию:
-*       do_free=FALSE
 */
-char *dos_to_unix_path(char *src, BOOL do_free)
+char *create_dos_to_unix_path(char *src)
 {
     // Подразумевается что в unix все папки в нижнем регистре
-    return strlwr_lat(strreplace(src, "\\", "/", do_free));
+    return str_lower_lat(create_str_replace(src, "\\", "/"));
 }
 
 
 /**
 *   Поменять расширение в имени файла
-*   По умолчанию:
-*       do_free=FALSE
 */
-char *change_filename_ext(char *filename, const char *new_ext, BOOL do_free)
+char *create_change_filename_ext(char *filename, const char *new_ext)
 {
     char *ext_filename = strrchr(filename, '.');
     char *result_filename = NULL;
 
     if (ext_filename != NULL)
     {
-        char *base = strleft(filename, ext_filename - filename, FALSE);
-        result_filename = strprintf(NULL, "%s%s", base, new_ext);
-        base = strfree(base);
+        char *base = create_str_begin(filename, ext_filename - filename);
+        result_filename = create_str_printf("%s%s", base, new_ext);
+        destroy_str_and_null(base);
     }
     else
-        result_filename = strprintf(NULL, "%s%s", filename, new_ext);
+        result_filename = create_str_printf("%s%s", filename, new_ext);
 
-    if (do_free)
-        // filename = strfree(filename);
-        strfree(filename);
     return result_filename;
 }
 
 /**
 *   Проверка на то же самый файл
 */
-BOOL is_samefile(const char *filename1, const char *filename2)
+BOOL is_same_file(const char *filename1, const char *filename2)
 {
     struct stat st1, st2;
 
