@@ -1,4 +1,4 @@
-# !/usr/bin/env python
+# !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import os
@@ -24,7 +24,9 @@ commands=(
           # './nixdbf --debug --dbf=./tst/SHIPPING.DBF --cmd=SELECT',
           # './nixdbf --debug --dbf=./tst/kladr.dbf --start_rec=1000000 --limit=10',
           # './nixdbf --debug --dbf=./tst/kladr.dbf --cmd=FIELDS',
-	  './nixdbf --dbf=./tst/export.dbf --start_rec=10 --limit=10 --cmd=SELECT',
+	  # './nixdbf --dbf=./tst/export.dbf --start_rec=10 --limit=10 --cmd=SELECT',
+	  # './nixdbf --dbf=./tst/export.dbf --cmd=FIELDS',
+	  './nixdbf --dbf=./tst/export.dbf --cmd=LENGTH',
           )
 
 
